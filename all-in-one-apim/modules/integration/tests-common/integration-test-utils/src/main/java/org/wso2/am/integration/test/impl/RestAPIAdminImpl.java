@@ -71,6 +71,7 @@ public class RestAPIAdminImpl {
     private TenantConfigApi tenantConfigApi = new TenantConfigApi();
     private TenantConfigSchemaApi tenantConfigSchemaApi = new TenantConfigSchemaApi();
     private OrganizationsApi organizationApi = new OrganizationsApi();
+    private PlatformGatewaysApi platformGatewaysApi = new PlatformGatewaysApi();
     public static final String appName = "Integration_Test_App_Admin";
     public static final String callBackURL = "test.com";
     public static final String tokenScope = "Production";
@@ -165,6 +166,7 @@ public class RestAPIAdminImpl {
         tenantConfigSchemaApi.setApiClient(apiAdminClient);
         apiProviderChangeApi.setApiClient(apiAdminClient);
         organizationApi.setApiClient(apiAdminClient);
+        platformGatewaysApi.setApiClient(apiAdminClient);
         this.tenantDomain = tenantDomain;
     }
 
@@ -835,6 +837,41 @@ public class RestAPIAdminImpl {
     public ApiResponse<Void> deleteEnvironment(String environmentId) throws ApiException {
 
         return environmentApi.environmentsEnvironmentIdDeleteWithHttpInfo(environmentId);
+    }
+
+    /**
+     * Retrieve a single gateway environment by id (including platform-gateway-backed environments).
+     * {@link #getEnvironments()} intentionally omits platform gateways; use this for deploy-target lookups.
+     *
+     * @param environmentId Environment UUID.
+     * @return API response returned by the API call.
+     * @throws ApiException if an error occurs while retrieving the environment.
+     */
+    public ApiResponse<EnvironmentDTO> getEnvironment(String environmentId) throws ApiException {
+        return environmentApi.environmentsEnvironmentIdGetWithHttpInfo(environmentId);
+    }
+
+    public ApiResponse<GatewayResponseWithTokenDTO> createPlatformGateway(
+            CreatePlatformGatewayRequestDTO body) throws ApiException {
+        return platformGatewaysApi.createPlatformGatewayWithHttpInfo(body);
+    }
+
+    public ApiResponse<GatewayListDTO> getPlatformGateways() throws ApiException {
+        return platformGatewaysApi.getPlatformGatewaysWithHttpInfo();
+    }
+
+    public ApiResponse<PlatformGatewayResponseDTO> updatePlatformGateway(String gatewayId,
+            UpdatePlatformGatewayRequestDTO body) throws ApiException {
+        return platformGatewaysApi.updatePlatformGatewayWithHttpInfo(gatewayId, body);
+    }
+
+    public ApiResponse<GatewayResponseWithTokenDTO> regeneratePlatformGatewayToken(String gatewayId)
+            throws ApiException {
+        return platformGatewaysApi.regeneratePlatformGatewayTokenWithHttpInfo(gatewayId);
+    }
+
+    public ApiResponse<Void> deletePlatformGateway(String gatewayId) throws ApiException {
+        return platformGatewaysApi.deletePlatformGatewayWithHttpInfo(gatewayId);
     }
     
     /**

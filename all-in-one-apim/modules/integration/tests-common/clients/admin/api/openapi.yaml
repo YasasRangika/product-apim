@@ -5388,6 +5388,61 @@ paths:
         source: 'curl -k -X DELETE -H "Authorization: Bearer ae4eae22-3f65-387b-a171-d37eaa366fa8"
           "https://127.0.0.1:9443/api/am/admin/v4/environments/d7cf8523-9180-4255-84fa-6cb171c1f779"'
       x-accepts: application/json
+    get:
+      description: |
+        Retrieve a single Gateway Environment Configuration. We should provide the Id of the Environment as a path parameter.
+      parameters:
+      - description: |
+          Environment UUID (or Environment name defined in config)
+        explode: false
+        in: path
+        name: environmentId
+        required: true
+        schema:
+          type: string
+        style: simple
+      responses:
+        "200":
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Environment'
+          description: |
+            OK.
+            Gateway Environment Configuration returned
+        "404":
+          content:
+            application/json:
+              example:
+                code: 404
+                message: Not Found
+                description: The specified resource does not exist
+                moreInfo: ""
+                error: []
+              schema:
+                $ref: '#/components/schemas/Error'
+          description: Not Found. The specified resource does not exist.
+        "406":
+          content:
+            application/json:
+              example:
+                code: 406
+                message: Not Acceptable
+                description: The requested media type is not supported
+                moreInfo: ""
+                error: []
+              schema:
+                $ref: '#/components/schemas/Error'
+          description: Not Acceptable. The requested media type is not supported.
+      security:
+      - OAuth2Security:
+        - apim:admin
+        - apim:environment_manage
+        - apim:environment_read
+      summary: Get a Gateway Environment Configuration
+      tags:
+      - Environment
+      x-accepts: application/json
     put:
       description: |
         Update a gateway Environment by environment Id
@@ -5533,6 +5588,277 @@ paths:
       - lang: Curl
         source: 'curl -k -H "Authorization: Bearer ae4eae22-3f65-387b-a171-d37eaa366fa8"
           "https://127.0.0.1:9443/api/am/admin/v4/environments/8d263942-a6df-4cc2-a804-7a2525501450/gateways"'
+      x-accepts: application/json
+  /gateways:
+    get:
+      description: |
+        Get all registered platform gateways for the organization.
+      operationId: getPlatformGateways
+      responses:
+        "200":
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/GatewayList'
+          description: |
+            OK.
+            List of platform gateways returned (without registration tokens).
+        "404":
+          content:
+            application/json:
+              example:
+                code: 404
+                message: Not Found
+                description: The specified resource does not exist
+                moreInfo: ""
+                error: []
+              schema:
+                $ref: '#/components/schemas/Error'
+          description: Not Found. The specified resource does not exist.
+      security:
+      - OAuth2Security:
+        - apim:admin
+      summary: Get all platform gateways
+      tags:
+      - Platform Gateways
+      x-code-samples:
+      - lang: Curl
+        source: 'curl -k -H "Authorization: Bearer ae4eae22-3f65-387b-a171-d37eaa366fa8"
+          "https://127.0.0.1:9443/api/am/admin/v4/gateways"'
+      x-accepts: application/json
+    post:
+      description: |
+        Register a new platform gateway. A registration token is generated and returned
+        once in the response; store it (e.g. as GATEWAY_CONTROL_PLANE_TOKEN in Docker Compose) for the
+        gateway to connect to the control plane WebSocket. The token is stored hashed and cannot be retrieved later.
+      operationId: createPlatformGateway
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/CreatePlatformGatewayRequest'
+        required: true
+      responses:
+        "201":
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/GatewayResponseWithToken'
+          description: |
+            Created.
+            Gateway and registration token (returned once) in the response body.
+        "400":
+          content:
+            application/json:
+              example:
+                code: 400
+                message: Bad Request
+                description: Invalid request or validation error
+                moreInfo: ""
+                error: []
+              schema:
+                $ref: '#/components/schemas/Error'
+          description: Bad Request. Invalid request or validation error.
+        "404":
+          content:
+            application/json:
+              example:
+                code: 404
+                message: Not Found
+                description: The specified resource does not exist
+                moreInfo: ""
+                error: []
+              schema:
+                $ref: '#/components/schemas/Error'
+          description: Not Found. The specified resource does not exist.
+        "409":
+          content:
+            application/json:
+              example:
+                code: 409
+                message: Conflict
+                description: Specified resource already exists
+                moreInfo: ""
+                error: []
+              schema:
+                $ref: '#/components/schemas/Error'
+          description: Conflict. Specified resource already exists.
+      security:
+      - OAuth2Security:
+        - apim:admin
+      summary: Register a platform gateway
+      tags:
+      - Platform Gateways
+      x-code-samples:
+      - lang: Curl
+        source: 'curl -k -X POST -H "Authorization: Bearer ae4eae22-3f65-387b-a171-d37eaa366fa8"
+          -H "Content-Type: application/json" -d @data.json "https://127.0.0.1:9443/api/am/admin/v4/gateways"'
+      x-contentType: application/json
+      x-accepts: application/json
+  /gateways/{gatewayId}/regenerate-token:
+    post:
+      description: |
+        Regenerate the registration token for an existing platform gateway. The old token is revoked
+        and a new one is generated. Store the new token (e.g. as GATEWAY_CONTROL_PLANE_TOKEN in Docker Compose)
+        for the gateway to reconnect to the control plane WebSocket. The token is returned only once.
+      operationId: regeneratePlatformGatewayToken
+      parameters:
+      - description: Gateway UUID
+        explode: false
+        in: path
+        name: gatewayId
+        required: true
+        schema:
+          type: string
+        style: simple
+      responses:
+        "200":
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/GatewayResponseWithToken'
+          description: |
+            OK.
+            Gateway and new registration token (returned once) in the response body.
+        "400":
+          content:
+            application/json:
+              example:
+                code: 400
+                message: Bad Request
+                description: Invalid request or validation error
+                moreInfo: ""
+                error: []
+              schema:
+                $ref: '#/components/schemas/Error'
+          description: Bad Request. Invalid request or validation error.
+        "404":
+          content:
+            application/json:
+              example:
+                code: 404
+                message: Not Found
+                description: The specified resource does not exist
+                moreInfo: ""
+                error: []
+              schema:
+                $ref: '#/components/schemas/Error'
+          description: Not Found. The specified resource does not exist.
+      security:
+      - OAuth2Security:
+        - apim:admin
+      summary: Regenerate registration token for a platform gateway
+      tags:
+      - Platform Gateways
+      x-code-samples:
+      - lang: Curl
+        source: 'curl -k -X POST -H "Authorization: Bearer ae4eae22-3f65-387b-a171-d37eaa366fa8"
+          "https://127.0.0.1:9443/api/am/admin/v4/gateways/{gatewayId}/regenerate-token"'
+      x-accepts: application/json
+  /gateways/{gatewayId}:
+    delete:
+      description: |
+        Delete a platform gateway and all its references (tokens, instance mappings, revision deployment
+        records, gateway environment, permissions). Fails with 409 if any API revisions are currently
+        deployed to this gateway; undeploy all APIs from the gateway first.
+      operationId: deletePlatformGateway
+      parameters:
+      - description: Gateway UUID
+        explode: false
+        in: path
+        name: gatewayId
+        required: true
+        schema:
+          type: string
+        style: simple
+      responses:
+        "200":
+          description: OK. Gateway and all references removed.
+        "404":
+          content:
+            application/json:
+              example:
+                code: 404
+                message: Not Found
+                description: The specified resource does not exist
+                moreInfo: ""
+                error: []
+              schema:
+                $ref: '#/components/schemas/Error'
+          description: Not Found. The specified resource does not exist.
+        "409":
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+          description: Conflict. Cannot delete gateway while API revisions are deployed
+            to it.
+      security:
+      - OAuth2Security:
+        - apim:admin
+      summary: Delete a platform gateway
+      tags:
+      - Platform Gateways
+      x-accepts: application/json
+    put:
+      description: |
+        Update platform gateway metadata. Request body must include all updatable fields (displayName,
+        description, properties, permissions). Name and vhost cannot be changed. UI should send
+        the full resource representation to align with PUT semantics.
+      operationId: updatePlatformGateway
+      parameters:
+      - description: Gateway UUID
+        explode: false
+        in: path
+        name: gatewayId
+        required: true
+        schema:
+          type: string
+        style: simple
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/UpdatePlatformGatewayRequest'
+        required: true
+      responses:
+        "200":
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/PlatformGatewayResponse'
+          description: OK. Updated platform gateway in the response body.
+        "400":
+          content:
+            application/json:
+              example:
+                code: 400
+                message: Bad Request
+                description: Invalid request or validation error
+                moreInfo: ""
+                error: []
+              schema:
+                $ref: '#/components/schemas/Error'
+          description: Bad Request. Invalid request or validation error.
+        "404":
+          content:
+            application/json:
+              example:
+                code: 404
+                message: Not Found
+                description: The specified resource does not exist
+                moreInfo: ""
+                error: []
+              schema:
+                $ref: '#/components/schemas/Error'
+          description: Not Found. The specified resource does not exist.
+      security:
+      - OAuth2Security:
+        - apim:admin
+      summary: Update a platform gateway
+      tags:
+      - Platform Gateways
+      x-contentType: application/json
       x-accepts: application/json
   /organizations:
     get:
@@ -9379,23 +9705,27 @@ components:
       type: object
     Environment:
       example:
+        apiDiscoveryScheduledWindow: 0
+        platformGatewayVersions:
+        - 1.0.0
+        - 1.0.0
+        displayName: US Region
+        description: Gateway environment in US Region
         endpointURIs:
         - protocol: default
           endpointURI: default
         - protocol: default
           endpointURI: default
-        apiDiscoveryScheduledWindow: 0
+        vhost: https://mg.wso2.com
         gatewayType: Regular
         isReadOnly: false
         provider: wso2
-        displayName: US Region
         permissions:
           permissionType: ALLOW
           roles:
           - Subscriber
           - Internal/subscriber
         name: us-region
-        description: Gateway environment in US Region
         id: ece92bdc-e1e6-325c-b6f4-656208a041e9
         additionalProperties:
         - value: wso2
@@ -9415,6 +9745,7 @@ components:
           wsPort: 9099
           host: mg.wso2.com
           httpsPort: 443
+        status: Active
       properties:
         id:
           example: ece92bdc-e1e6-325c-b6f4-656208a041e9
@@ -9467,6 +9798,31 @@ components:
           type: array
         permissions:
           $ref: '#/components/schemas/Environment_permissions'
+        status:
+          description: For platform gateway environments (gatewayType Universal/APIPlatform),
+            connection status to the control plane (Active or Inactive).
+          enum:
+          - Active
+          - Inactive
+          example: Active
+          readOnly: true
+          type: string
+        vhost:
+          description: For platform gateway environments, the gateway URL (e.g. https://host:9443).
+            Same as Platform Gateways API; only set when this environment represents
+            a platform gateway.
+          example: https://mg.wso2.com
+          format: uri
+          readOnly: true
+          type: string
+        platformGatewayVersions:
+          description: API Platform Gateway versions from config. Set for deploy targets
+            so UI can show version choices in the quick-start guide.
+          items:
+            example: 1.0.0
+            type: string
+          readOnly: true
+          type: array
       required:
       - name
       - vhosts
@@ -9476,23 +9832,27 @@ components:
       example:
         count: 1
         list:
-        - endpointURIs:
+        - apiDiscoveryScheduledWindow: 0
+          platformGatewayVersions:
+          - 1.0.0
+          - 1.0.0
+          displayName: US Region
+          description: Gateway environment in US Region
+          endpointURIs:
           - protocol: default
             endpointURI: default
           - protocol: default
             endpointURI: default
-          apiDiscoveryScheduledWindow: 0
+          vhost: https://mg.wso2.com
           gatewayType: Regular
           isReadOnly: false
           provider: wso2
-          displayName: US Region
           permissions:
             permissionType: ALLOW
             roles:
             - Subscriber
             - Internal/subscriber
           name: us-region
-          description: Gateway environment in US Region
           id: ece92bdc-e1e6-325c-b6f4-656208a041e9
           additionalProperties:
           - value: wso2
@@ -9512,23 +9872,28 @@ components:
             wsPort: 9099
             host: mg.wso2.com
             httpsPort: 443
-        - endpointURIs:
+          status: Active
+        - apiDiscoveryScheduledWindow: 0
+          platformGatewayVersions:
+          - 1.0.0
+          - 1.0.0
+          displayName: US Region
+          description: Gateway environment in US Region
+          endpointURIs:
           - protocol: default
             endpointURI: default
           - protocol: default
             endpointURI: default
-          apiDiscoveryScheduledWindow: 0
+          vhost: https://mg.wso2.com
           gatewayType: Regular
           isReadOnly: false
           provider: wso2
-          displayName: US Region
           permissions:
             permissionType: ALLOW
             roles:
             - Subscriber
             - Internal/subscriber
           name: us-region
-          description: Gateway environment in US Region
           id: ece92bdc-e1e6-325c-b6f4-656208a041e9
           additionalProperties:
           - value: wso2
@@ -9548,6 +9913,7 @@ components:
             wsPort: 9099
             host: mg.wso2.com
             httpsPort: 443
+          status: Active
       properties:
         count:
           description: |
@@ -9604,6 +9970,201 @@ components:
       required:
       - gatewayId
       title: Gateway instance in the gateway environment
+      type: object
+    CreatePlatformGatewayRequest:
+      description: Request body for creating a platform gateway (name, displayName,
+        vhost as URL, optional properties). Same property name as platform API; type
+        is URL.
+      properties:
+        name:
+          description: URL-friendly gateway identifier (lowercase alphanumeric with
+            hyphens, unique per organization)
+          example: prod-gateway-01
+          maxLength: 64
+          minLength: 3
+          pattern: ^[a-z0-9-]+$
+          type: string
+        displayName:
+          description: Human-readable gateway name
+          example: Production Gateway 01
+          maxLength: 128
+          minLength: 1
+          type: string
+        description:
+          description: Optional description
+          maxLength: 1023
+          type: string
+        vhost:
+          description: Gateway URL (e.g. https://mg.example.com:9443). Same name as
+            platform API; type is URL. Server persists host internally.
+          example: https://mg.wso2.com
+          format: uri
+          type: string
+        properties:
+          additionalProperties: true
+          description: Custom key-value properties for the gateway
+          example:
+            region: us-west
+            tier: premium
+          type: object
+        permissions:
+          $ref: '#/components/schemas/CreatePlatformGatewayRequest_permissions'
+      required:
+      - displayName
+      - name
+      - vhost
+      title: Create Platform Gateway Request
+      type: object
+    UpdatePlatformGatewayRequest:
+      description: |
+        Request body for PUT /gateways/{gatewayId}. Per PUT semantics, send the full resource
+        representation. Name and vhost are immutable (server validates they match the existing gateway).
+      properties:
+        name:
+          description: Gateway identifier (immutable; must match existing). Required
+            for PUT full representation.
+          maxLength: 64
+          minLength: 3
+          pattern: ^[a-z0-9-]+$
+          type: string
+        vhost:
+          description: Gateway URL (immutable; must match existing). Same name as
+            platform API; type is URL. Example https://mg.wso2.com
+          example: https://mg.wso2.com
+          format: uri
+          type: string
+        displayName:
+          description: Human-readable gateway name
+          example: Production Gateway 01
+          maxLength: 128
+          minLength: 1
+          type: string
+        description:
+          description: Optional description
+          maxLength: 1023
+          type: string
+        properties:
+          additionalProperties: true
+          description: Custom key-value properties for the gateway
+          example:
+            region: us-west
+            tier: premium
+          type: object
+        permissions:
+          $ref: '#/components/schemas/UpdatePlatformGatewayRequest_permissions'
+      required:
+      - displayName
+      - name
+      - vhost
+      title: Update Platform Gateway Request
+      type: object
+    PlatformGatewayResponse:
+      description: Platform gateway response (without registration token). Used for
+        list and get.
+      example:
+        vhost: https://openapi-generator.tech
+        createdAt: 2000-01-23T04:56:07.000+00:00
+        displayName: displayName
+        permissions:
+          permissionType: PUBLIC
+          roles:
+          - roles
+          - roles
+        name: name
+        description: description
+        id: id
+        isActive: true
+        properties:
+          key: '{}'
+        updatedAt: 2000-01-23T04:56:07.000+00:00
+      properties:
+        id:
+          description: Gateway UUID
+          readOnly: true
+          type: string
+        name:
+          type: string
+        displayName:
+          type: string
+        description:
+          type: string
+        properties:
+          additionalProperties: true
+          description: Custom key-value properties
+          type: object
+        vhost:
+          description: Gateway URL (e.g. https://host or https://host:9443). Same
+            name as platform API; type is URL.
+          format: uri
+          readOnly: true
+          type: string
+        isActive:
+          description: Indicates if the gateway is currently connected to the control
+            plane via WebSocket
+          readOnly: true
+          type: boolean
+        permissions:
+          $ref: '#/components/schemas/PlatformGatewayResponse_permissions'
+        createdAt:
+          format: date-time
+          readOnly: true
+          type: string
+        updatedAt:
+          format: date-time
+          readOnly: true
+          type: string
+      title: Platform Gateway Response
+      type: object
+    GatewayResponseWithToken:
+      allOf:
+      - $ref: '#/components/schemas/PlatformGatewayResponse'
+      - $ref: '#/components/schemas/GatewayResponseWithToken_allOf'
+      description: Platform gateway response including the one-time registration token
+        (POST create or regenerate-token).
+      title: Gateway Response With Token
+    GatewayList:
+      example:
+        count: 0
+        list:
+        - vhost: https://openapi-generator.tech
+          createdAt: 2000-01-23T04:56:07.000+00:00
+          displayName: displayName
+          permissions:
+            permissionType: PUBLIC
+            roles:
+            - roles
+            - roles
+          name: name
+          description: description
+          id: id
+          isActive: true
+          properties:
+            key: '{}'
+          updatedAt: 2000-01-23T04:56:07.000+00:00
+        - vhost: https://openapi-generator.tech
+          createdAt: 2000-01-23T04:56:07.000+00:00
+          displayName: displayName
+          permissions:
+            permissionType: PUBLIC
+            roles:
+            - roles
+            - roles
+          name: name
+          description: description
+          id: id
+          isActive: true
+          properties:
+            key: '{}'
+          updatedAt: 2000-01-23T04:56:07.000+00:00
+      properties:
+        count:
+          description: Number of platform gateways returned
+          type: integer
+        list:
+          items:
+            $ref: '#/components/schemas/PlatformGatewayResponse'
+          type: array
+      title: Gateway List
       type: object
     Organization:
       example:
@@ -11398,6 +11959,77 @@ components:
           items:
             type: string
           type: array
+    CreatePlatformGatewayRequest_permissions:
+      description: Gateway visibility permissions configuration
+      example: '{"permissionType":"ALLOW","roles":["admin","publisher"]}'
+      properties:
+        permissionType:
+          default: PUBLIC
+          description: |
+            Permission type for gateway visibility:
+            - PUBLIC: Gateway is visible to all users
+            - ALLOW: Gateway is visible only to specified roles
+            - DENY: Gateway is hidden from specified roles
+          enum:
+          - PUBLIC
+          - ALLOW
+          - DENY
+          type: string
+        roles:
+          description: List of roles for ALLOW/DENY permission types
+          example:
+          - admin
+          - publisher
+          items:
+            type: string
+          type: array
+    UpdatePlatformGatewayRequest_permissions:
+      description: Gateway visibility permissions (on-prem extension)
+      properties:
+        permissionType:
+          default: PUBLIC
+          enum:
+          - PUBLIC
+          - ALLOW
+          - DENY
+          type: string
+        roles:
+          description: List of roles for ALLOW/DENY permission types
+          items:
+            type: string
+          type: array
+    PlatformGatewayResponse_permissions:
+      description: Gateway visibility permissions configuration
+      example:
+        permissionType: PUBLIC
+        roles:
+        - roles
+        - roles
+      properties:
+        permissionType:
+          default: PUBLIC
+          description: |
+            Permission type for gateway visibility:
+            - PUBLIC: Gateway is visible to all users
+            - ALLOW: Gateway is visible only to specified roles
+            - DENY: Gateway is hidden from specified roles
+          enum:
+          - PUBLIC
+          - ALLOW
+          - DENY
+          type: string
+        roles:
+          description: List of roles for ALLOW/DENY permission types
+          items:
+            type: string
+          type: array
+    GatewayResponseWithToken_allOf:
+      properties:
+        registrationToken:
+          description: |
+            Registration token (returned only once on create or regenerate). Use as api-key when connecting
+            the gateway to the control plane WebSocket. Store e.g. as GATEWAY_REGISTRATION_TOKEN.
+          type: string
     CustomUrlInfo_devPortal:
       example:
         url: http://example.com

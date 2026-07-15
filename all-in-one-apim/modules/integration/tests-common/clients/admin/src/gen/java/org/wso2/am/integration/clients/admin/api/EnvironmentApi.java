@@ -167,6 +167,125 @@ public class EnvironmentApi {
         return localVarCall;
     }
     /**
+     * Build call for environmentsEnvironmentIdGet
+     * @param environmentId Environment UUID (or Environment name defined in config)  (required)
+     * @param _callback Callback for upload/download progress
+     * @return Call to execute
+     * @throws ApiException If fail to serialize the request body object
+     * @http.response.details
+     <table summary="Response Details" border="1">
+        <tr><td> Status Code </td><td> Description </td><td> Response Headers </td></tr>
+        <tr><td> 200 </td><td> OK. Gateway Environment Configuration returned  </td><td>  -  </td></tr>
+        <tr><td> 404 </td><td> Not Found. The specified resource does not exist. </td><td>  -  </td></tr>
+        <tr><td> 406 </td><td> Not Acceptable. The requested media type is not supported. </td><td>  -  </td></tr>
+     </table>
+     */
+    public okhttp3.Call environmentsEnvironmentIdGetCall(String environmentId, final ApiCallback _callback) throws ApiException {
+        Object localVarPostBody = null;
+
+        // create path and map variables
+        String localVarPath = "/environments/{environmentId}"
+            .replaceAll("\\{" + "environmentId" + "\\}", localVarApiClient.escapeString(environmentId.toString()));
+
+        List<Pair> localVarQueryParams = new ArrayList<Pair>();
+        List<Pair> localVarCollectionQueryParams = new ArrayList<Pair>();
+        Map<String, String> localVarHeaderParams = new HashMap<String, String>();
+        Map<String, String> localVarCookieParams = new HashMap<String, String>();
+        Map<String, Object> localVarFormParams = new HashMap<String, Object>();
+        final String[] localVarAccepts = {
+            "application/json"
+        };
+        final String localVarAccept = localVarApiClient.selectHeaderAccept(localVarAccepts);
+        if (localVarAccept != null) {
+            localVarHeaderParams.put("Accept", localVarAccept);
+        }
+
+        final String[] localVarContentTypes = {
+            
+        };
+        final String localVarContentType = localVarApiClient.selectHeaderContentType(localVarContentTypes);
+        localVarHeaderParams.put("Content-Type", localVarContentType);
+
+        String[] localVarAuthNames = new String[] { "OAuth2Security" };
+        return localVarApiClient.buildCall(localVarPath, "GET", localVarQueryParams, localVarCollectionQueryParams, localVarPostBody, localVarHeaderParams, localVarCookieParams, localVarFormParams, localVarAuthNames, _callback);
+    }
+
+    @SuppressWarnings("rawtypes")
+    private okhttp3.Call environmentsEnvironmentIdGetValidateBeforeCall(String environmentId, final ApiCallback _callback) throws ApiException {
+        
+        // verify the required parameter 'environmentId' is set
+        if (environmentId == null) {
+            throw new ApiException("Missing the required parameter 'environmentId' when calling environmentsEnvironmentIdGet(Async)");
+        }
+        
+
+        okhttp3.Call localVarCall = environmentsEnvironmentIdGetCall(environmentId, _callback);
+        return localVarCall;
+
+    }
+
+    /**
+     * Get a Gateway Environment Configuration
+     * Retrieve a single Gateway Environment Configuration. We should provide the Id of the Environment as a path parameter. 
+     * @param environmentId Environment UUID (or Environment name defined in config)  (required)
+     * @return EnvironmentDTO
+     * @throws ApiException If fail to call the API, e.g. server error or cannot deserialize the response body
+     * @http.response.details
+     <table summary="Response Details" border="1">
+        <tr><td> Status Code </td><td> Description </td><td> Response Headers </td></tr>
+        <tr><td> 200 </td><td> OK. Gateway Environment Configuration returned  </td><td>  -  </td></tr>
+        <tr><td> 404 </td><td> Not Found. The specified resource does not exist. </td><td>  -  </td></tr>
+        <tr><td> 406 </td><td> Not Acceptable. The requested media type is not supported. </td><td>  -  </td></tr>
+     </table>
+     */
+    public EnvironmentDTO environmentsEnvironmentIdGet(String environmentId) throws ApiException {
+        ApiResponse<EnvironmentDTO> localVarResp = environmentsEnvironmentIdGetWithHttpInfo(environmentId);
+        return localVarResp.getData();
+    }
+
+    /**
+     * Get a Gateway Environment Configuration
+     * Retrieve a single Gateway Environment Configuration. We should provide the Id of the Environment as a path parameter. 
+     * @param environmentId Environment UUID (or Environment name defined in config)  (required)
+     * @return ApiResponse&lt;EnvironmentDTO&gt;
+     * @throws ApiException If fail to call the API, e.g. server error or cannot deserialize the response body
+     * @http.response.details
+     <table summary="Response Details" border="1">
+        <tr><td> Status Code </td><td> Description </td><td> Response Headers </td></tr>
+        <tr><td> 200 </td><td> OK. Gateway Environment Configuration returned  </td><td>  -  </td></tr>
+        <tr><td> 404 </td><td> Not Found. The specified resource does not exist. </td><td>  -  </td></tr>
+        <tr><td> 406 </td><td> Not Acceptable. The requested media type is not supported. </td><td>  -  </td></tr>
+     </table>
+     */
+    public ApiResponse<EnvironmentDTO> environmentsEnvironmentIdGetWithHttpInfo(String environmentId) throws ApiException {
+        okhttp3.Call localVarCall = environmentsEnvironmentIdGetValidateBeforeCall(environmentId, null);
+        Type localVarReturnType = new TypeToken<EnvironmentDTO>(){}.getType();
+        return localVarApiClient.execute(localVarCall, localVarReturnType);
+    }
+
+    /**
+     * Get a Gateway Environment Configuration (asynchronously)
+     * Retrieve a single Gateway Environment Configuration. We should provide the Id of the Environment as a path parameter. 
+     * @param environmentId Environment UUID (or Environment name defined in config)  (required)
+     * @param _callback The callback to be executed when the API call finishes
+     * @return The request call
+     * @throws ApiException If fail to process the API call, e.g. serializing the request body object
+     * @http.response.details
+     <table summary="Response Details" border="1">
+        <tr><td> Status Code </td><td> Description </td><td> Response Headers </td></tr>
+        <tr><td> 200 </td><td> OK. Gateway Environment Configuration returned  </td><td>  -  </td></tr>
+        <tr><td> 404 </td><td> Not Found. The specified resource does not exist. </td><td>  -  </td></tr>
+        <tr><td> 406 </td><td> Not Acceptable. The requested media type is not supported. </td><td>  -  </td></tr>
+     </table>
+     */
+    public okhttp3.Call environmentsEnvironmentIdGetAsync(String environmentId, final ApiCallback<EnvironmentDTO> _callback) throws ApiException {
+
+        okhttp3.Call localVarCall = environmentsEnvironmentIdGetValidateBeforeCall(environmentId, _callback);
+        Type localVarReturnType = new TypeToken<EnvironmentDTO>(){}.getType();
+        localVarApiClient.executeAsync(localVarCall, localVarReturnType, _callback);
+        return localVarCall;
+    }
+    /**
      * Build call for environmentsEnvironmentIdPut
      * @param environmentId Environment UUID (or Environment name defined in config)  (required)
      * @param environmentDTO Environment object with updated information  (required)
